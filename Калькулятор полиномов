@@ -1,0 +1,194 @@
+#include "stdafx.h"
+#include "iostream"
+#include "stdio.h"
+#include <conio.h>
+#include "math.h"
+#include <Windows.h>
+using namespace std;
+
+struct Polinom //полином 
+{
+	short int s;//Степень
+	double*k;//Коэффициент
+}P1,P2,R,B;
+
+void IntoPolinom(Polinom P)//Ввод полинома
+{
+	for (int i = 0; i <= P.s; i++)
+	{
+		cout << "Введите коэффициент" << "\n";
+		cin >> P.k[i];
+	}
+}
+
+void OutPolinom(Polinom P)//Вывод полинома 
+{
+	int st;
+	for (int i = 0; i <= P.s; i++)
+	{
+		st = P.s - i;
+		if(P.k[i]!=0)
+		{
+			if (i != P.s)
+			{
+				cout << P.k[i] << "X^" << st << " + ";
+			}
+			else { cout << P.k[i] << "\n"; }
+		}
+		else continue;
+	}
+}
+
+void Summa(Polinom a, Polinom b)
+{
+	if (a.s == b.s)
+	{
+		for(int i=0;i<=a.s;i++){ R.k[i] = a.k[i] + b.k[i];}
+	}
+	if (a.s > b.s)
+	{
+		for (int i = 0; i <= a.s; i++) 
+		{ 
+			R.k[i] = a.k[i];
+		}
+		for (int i = 0,j=(a.s-b.s); i <= b.s; i++,j++)
+		{
+			R.k[j] += b.k[i];
+		}
+	}
+	if (b.s > a.s)
+	{
+		for (int i = 0; i <= b.s; i++)
+		{
+			R.k[i] = b.k[i];
+		}
+		for (int i = 0, j = (b.s - a.s); i <= a.s; i++, j++)
+		{
+			R.k[j] += a.k[i];
+		}
+	}
+	R.s = a.s > b.s ? a.s : b.s;
+}
+
+void Raznost(Polinom a, Polinom b)//P1 - P2
+{
+	if (a.s == b.s)
+	{
+		for (int i = 0; i <= a.s; i++) { R.k[i] = a.k[i] - b.k[i];}
+	}
+	if (a.s > b.s)
+	{
+		for (int i = 0; i <= a.s; i++)
+		{
+			R.k[i] = a.k[i];
+		}
+		for (int i = 0, j = (a.s - b.s); i <= b.s; i++, j++)
+		{
+			R.k[j] -= b.k[i];
+		}
+	}
+	if (b.s > a.s)
+	{
+		for (int i = 0; i <= b.s; i++)
+		{
+			R.k[i] = -b.k[i];
+		}
+		for (int i = 0, j = (b.s - a.s); i <= a.s; i++, j++)
+		{
+			R.k[j] += a.k[i];
+		}
+	}
+	R.s = a.s > b.s ? a.s : b.s;
+}
+
+void Ymnoz(Polinom a, Polinom b)
+{
+	R.s = a.s + b.s;
+	for (int i = 0; i <= R.s; i++)
+	{
+		R.k[i] = 0;
+	}
+	for (int i = 0; i <= b.s; i++)
+	{
+		for (int j = 0; j <= a.s; j++)
+		{
+			R.k[i+j] += P1.k[j] * P2.k[i];
+		}
+	}
+}
+
+ void RZ(Polinom a, Polinom b)//разность a-b,где результат присваевается самой a
+{
+	if (a.s == b.s)
+	{
+		for (int i = 0; i <= a.s; i++) { a.k[i] = a.k[i] - b.k[i]; }
+	}
+	int step = 0;
+	while (a.k[step] == 0)
+	{
+		step++;
+	}
+	a.s =a.s-step;//ошибка
+}
+
+void Delenie(Polinom a, Polinom b)
+{
+	R.s = a.s - b.s;
+	int q = 0;
+	do
+	{
+		R.k[q] = a.k[q] / b.k[q];//Хранится целая чать деления
+		for (int i = 0; i <= b.s; i++)//умножение делителя на коэффициент
+		{
+			B.k[i] = b.k[i] * R.k[q];
+		}
+		B.s = a.s;
+		RZ(a, B);
+		q++;
+	} while (a.s >= b.s);
+}
+
+int main()
+{
+	setlocale(0, "");
+	char z='y';
+	do 
+	{
+		cout << "Степень полинома P1 = ";
+		cin >> P1.s;
+		cout << "Степень полинома P2 = ";
+		cin >> P2.s;
+		P1.k = new double[P1.s + 1];//будет создан массив на P1.s+1 коэффициентов,где P1.s при x
+		P2.k = new double[P2.s + 1];
+		R.k = new double[P1.s + P2.s + 1];
+		B.k= new double[P1.s + P2.s + 1];
+		IntoPolinom(P1);
+		OutPolinom(P1);
+		IntoPolinom(P2);
+		OutPolinom(P2);
+
+		cout << "\n";
+		RZ(P1, P2);
+		OutPolinom(P1);
+		cout << P1.s << "\n";
+
+		char d;
+		cout << "Введите + - * / для действия" << "\n";
+		cin >> d;
+		switch (d)
+		{
+		case '+':cout << "Сумма равна " << "\n"; Summa(P1, P2); OutPolinom(R); break;
+		case '-':cout << "Разность равна " << "\n"; Raznost(P1, P2); OutPolinom(R); break;
+		case '*':cout << "Произведение равно " << "\n"; Ymnoz(P1, P2); OutPolinom(R); break;
+		case '/':cout << "Целое равно" << "\n"; Delenie(P1, P2); OutPolinom(R); cout << "Остаток равен" << "\n"; OutPolinom(P1);
+		}
+
+		cout << "y/n"<<"\n";
+		cin >> z;
+	} while (z != 'n');
+
+
+	//delete[]P1;
+	//system("pause");
+    return 0;
+}
